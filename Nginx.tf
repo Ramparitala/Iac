@@ -23,7 +23,7 @@ provider "aws" {
 # RESOURCES
 ##################################################################################
 #security group for aws
-resource "aws_security_group" "nginx_sg"{
+resource "aws_security_group" "nginx_sg" {
   name          = "nginx_sg"
   description   = "security group for nginx from terraform"
 
