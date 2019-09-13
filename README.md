@@ -1,6 +1,6 @@
 # terraform
 Terraform
- # Our first AWS configuration for Terraform
+ # My first AWS configuration for Terraform
    An initial configuration for Terraform.
 ## Usage
    ```
