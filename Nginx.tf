@@ -1,12 +1,14 @@
 ##################################################################################
-# VARIABLES
+# Variables
 ##################################################################################
 
 variable "aws_access_key" {}
 variable "aws_secret_key" {}
-variable "private_key_path" {}
+variable "private_key_path" {
+    default = "Terraform.pem"
+}
 variable "key_name" {
-  default = "web"
+  default = "Terraform"
 }
 
 ##################################################################################
@@ -18,6 +20,7 @@ provider "aws" {
   secret_key = "${var.aws_secret_key}"
   region     = "us-east-1"
 }
+
 
 ##################################################################################
 # RESOURCES
@@ -55,63 +58,35 @@ resource "aws_security_group" "nginx_sg" {
   }
 }
 
-
 resource "aws_instance" "nginx" {
-  ami           = "ami-c58c1dd3"
+  ami           = "ami-07ebfd5b3428b6f4d"
   instance_type = "t2.micro"
   key_name        = "${var.key_name}"
   vpc_security_group_ids = ["${aws_security_group.nginx_sg.id}"]
+  associate_public_ip_address = "true"
 
   connection {
-    user        = "ec2-user"
+    user        = "ubuntu"
     private_key = "${file(var.private_key_path)}"
+    host = "${aws_instance.nginx.public_ip}"
   }
 
   provisioner "remote-exec" {
     inline = [
-      "sudo yum install nginx -y",
+      "sudo apt-get update",
+      "sudo apt-get install nginx -y",
       "sudo service nginx start"
-    ]
+     ]
   }
 }
-
-#resource "aws_instance" "nginx1" {
- # ami           = "ami-c58c1dd3"
-  #instance_type = "t2.micro"
-  #key_name        = "${var.key_name}"
-  #vpc_security_group_ids = ["${aws_security_group.nginx_sg.id}"]
-
-  #connection {
-   # user        = "ec2-user"
-    #private_key = "${file(var.private_key_path)}"
-  #}
-
-  #provisioner "remote-exec" {
-   # inline = [
-    #  "sudo yum install nginx -y",
-     # "sudo service nginx start"
-    #]
-  #}
-#}
-
-
-data "aws_instance" "foo" {
-  #instance_id = "i-00c0aee98f07abe22" 
-  filter {
-    name   = "image-id"
-    values = ["ami-c58c1dd3"]
-  }
-
-}
-
 ##################################################################################
 # OUTPUT
 ##################################################################################
 
 output "aws_instance_public_dns" {
-    value = "${aws_instance.nginx.public_dns}"
+    value = "http://${aws_instance.nginx.public_dns}:80"
 }
 
 output "aws_instance_public_ip"{
-    value = "${data.aws_instance.foo.public_ip}"
+    value = "${aws_instance.nginx.private_ip}"
 }
